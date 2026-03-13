@@ -1,0 +1,53 @@
+import React from 'react';
+import { ShoppingCart, Eye } from 'lucide-react';
+
+const ProductCard = ({ product, onOpenDetails, onPlaceOrder }) => {
+    const { name, category, price, available_stock } = product;
+
+    const getStockStatus = () => {
+        if (available_stock <= 0) return { label: 'Out of Stock', color: 'red' };
+        if (available_stock < 10) return { label: 'Low Stock', color: 'yellow' };
+        return { label: 'In Stock', color: 'green' };
+    };
+
+    const status = getStockStatus();
+
+    return (
+        <div className="product-card">
+            <div className="product-image-placeholder">
+                <ShoppingCart size={48} className="text-muted opacity-20" />
+            </div>
+            <div className="product-info">
+                <div className="product-meta">
+                    <span className="product-category">{category}</span>
+                    <span className={`status-badge status-${status.color}`}>
+                        {status.label}
+                    </span>
+                </div>
+                <h3 className="product-name">{name}</h3>
+                <div className="product-price-row">
+                    <span className="product-price">${parseFloat(price).toFixed(2)}</span>
+                    <span className="product-stock">{available_stock} units left</span>
+                </div>
+                <div className="product-actions">
+                    <button
+                        className="btn-primary-small"
+                        onClick={() => onPlaceOrder(product)}
+                        disabled={available_stock <= 0}
+                    >
+                        <ShoppingCart size={16} />
+                        Place Order
+                    </button>
+                    <button
+                        className="btn-secondary-small"
+                        onClick={() => onOpenDetails(product)}
+                    >
+                        <Eye size={16} />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ProductCard;
