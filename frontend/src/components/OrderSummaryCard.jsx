@@ -38,11 +38,11 @@ const OrderSummaryCard = ({ product }) => {
                     </div>
                 </div>
 
-                <div className="summary-item border-t pt-4 mt-4">
+                <div className="summary-item border-t" style={{ paddingTop: '1rem', marginTop: '1rem' }}>
                     <div className="item-label">
                         <span>Stock Availability</span>
                     </div>
-                    <div className={`item-value font-medium ${product.available_stock < 10 ? 'text-yellow-600' : 'text-green-600'}`}>
+                    <div className="item-value font-medium" style={{ color: product.available_stock < 10 ? '#854d0e' : '#166534' }}>
                         {product.available_stock} units left
                     </div>
                 </div>

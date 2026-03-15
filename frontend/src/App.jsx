@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Orders from './pages/Orders';
 import Products from './pages/Products';
 import PlaceOrder from './pages/PlaceOrder';
+import Payment from './pages/Payment';
 import OrderStatus from './pages/OrderStatus';
 import Navbar from './components/Navbar';
 import { ShoppingBag } from 'lucide-react';
@@ -20,6 +21,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/place-order" element={<PlaceOrder />} />
+            <Route path="/payment/:orderId" element={<Payment />} />
             <Route path="/order-status" element={<OrderStatus />} />
             <Route path="/order-status/:orderId" element={<OrderStatus />} />
             <Route path="/orders" element={<Orders />} />

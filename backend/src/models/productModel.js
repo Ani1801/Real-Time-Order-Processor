@@ -1,21 +1,47 @@
 const db = require('../config/db');
 
 const Product = {
-    getAll: async () => {
-        const result = await db.query('SELECT * FROM products');
+
+    getAllWithInventory: async () => {
+        const result = await db.query(`
+            SELECT 
+                p.id AS product_id,
+                p.name,
+                p.price,
+                p.category,
+                COALESCE(i.available_stock, 0) AS available_stock
+            FROM products p
+            LEFT JOIN inventory i ON p.id = i.product_id
+            ORDER BY p.id
+        `);
         return result.rows;
     },
+
     getById: async (id) => {
-        const result = await db.query('SELECT * FROM products WHERE id = $1', [id]);
+        const result = await db.query(`
+            SELECT p.*, i.available_stock
+            FROM products p
+            LEFT JOIN inventory i ON p.id = i.product_id
+            WHERE p.id = $1
+        `, [id]);
         return result.rows[0];
     },
+
     updateStock: async (id, quantity) => {
-        const result = await db.query(
-            'UPDATE products SET stock = stock - $2 WHERE id = $1 AND stock >= $2 RETURNING *',
-            [id, quantity]
-        );
+        const result = await db.query(`
+            UPDATE inventory
+            SET 
+                available_stock = available_stock - $2,
+                reserved_stock = reserved_stock + $2,
+                last_updated = NOW()
+            WHERE product_id = $1
+            AND available_stock >= $2
+            RETURNING *
+        `, [id, quantity]);
+
         return result.rows[0];
     }
+
 };
 
 module.exports = Product;

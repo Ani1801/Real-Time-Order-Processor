@@ -3,7 +3,7 @@ import { ShoppingCart, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { orderService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
-const OrderForm = ({ product }) => {
+const OrderForm = ({ product, setIsProcessing }) => {
     const navigate = useNavigate();
     const [quantity, setQuantity] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -19,6 +19,7 @@ const OrderForm = ({ product }) => {
 
         try {
             setLoading(true);
+            if (setIsProcessing) setIsProcessing(true);
             setError(null);
 
             // Using dummy user_id as per project context (usually would come from auth)
@@ -39,64 +40,66 @@ const OrderForm = ({ product }) => {
             setError(msg);
         } finally {
             setLoading(false);
+            if (setIsProcessing) setIsProcessing(false);
         }
     };
 
     if (success) {
         return (
-            <div className="order-form success-state">
-                <CheckCircle size={64} className="text-green-500 mb-4 mx-auto" />
-                <h2 className="text-2xl font-bold mb-2">Order placed successfully!</h2>
-                <p className="text-muted mb-6">Your order ID: <span className="font-mono font-bold text-dark">{success}</span></p>
+            <div className="success-state" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
+                <CheckCircle size={64} style={{ color: '#22c55e', margin: '0 auto 1rem' }} />
+                <h2 className="section-title" style={{ fontSize: '1.75rem' }}>Order placed successfully!</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Your order ID: <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'var(--text-dark)' }}>{success}</span></p>
 
                 <button
-                    onClick={() => navigate(`/order-status/${success}`)}
-                    className="btn-primary-large w-full"
+                    onClick={() => navigate(`/payment/${success}`)}
+                    className="btn-primary-full"
                 >
-                    Track Your Order
+                    Proceed to Payment
                 </button>
             </div>
         );
     }
 
     return (
-        <form onSubmit={handleSubmit} className="order-form">
-            <h3 className="text-xl font-bold mb-6">Order Configuration</h3>
+        <form onSubmit={handleSubmit} className="order-form" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Order Configuration</h3>
 
             {error && (
-                <div className="error-alert mb-6">
+                <div className="error-alert" style={{ marginBottom: '1.5rem' }}>
                     <AlertCircle size={20} />
                     <span>{error}</span>
                 </div>
             )}
 
-            <div className="form-group mb-6">
-                <label className="block text-sm font-semibold mb-2">Quantity</label>
+            <div className="quantity-selector">
+                <label>Quantity</label>
                 <input
                     type="number"
                     min="1"
                     max={product?.available_stock || 1}
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary outline-none transition-all"
                     required
                 />
-                <p className="text-xs text-muted mt-2">
-                    Enter a quantity between 1 and {product?.available_stock || 0}.
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                    Max available: {product?.available_stock || 0}
                 </p>
             </div>
 
-            <div className="total-preview mb-8 p-4 bg-slate-50 rounded-lg border border-dashed border-slate-300">
-                <div className="flex justify-between items-center">
-                    <span className="text-muted font-medium">Estimated Total</span>
-                    <span className="text-2xl font-extrabold text-primary">${totalPrice}</span>
+            <div className="total-preview">
+                <div>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>Estimated Total</span>
                 </div>
+                <span className="value">
+                    ${totalPrice}
+                </span>
             </div>
 
             <button
                 type="submit"
                 disabled={loading || !product || product.available_stock <= 0}
-                className="btn-primary-full py-4 flex items-center justify-center gap-2 text-lg"
+                className="btn-primary-full"
             >
                 {loading ? (
                     <>
@@ -112,7 +115,7 @@ const OrderForm = ({ product }) => {
             </button>
 
             {!loading && product?.available_stock <= 0 && (
-                <p className="text-center text-red-500 text-sm mt-4 font-medium">
+                <p style={{ textAlign: 'center', color: '#dc2626', fontSize: '0.875rem', marginTop: '1rem', fontWeight: 500 }}>
                     This item is currently out of stock.
                 </p>
             )}

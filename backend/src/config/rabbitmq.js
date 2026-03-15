@@ -10,13 +10,14 @@ const connectRabbitMQ = async () => {
         channel = await connection.createChannel();
         console.log('Connected to RabbitMQ');
 
-        // Ensure queue exists
-        await channel.assertQueue('order_queue', { durable: true });
+        // Ensure queues exist
+        await channel.assertQueue('order_created', { durable: true });
+        await channel.assertQueue('payment_success', { durable: true });
 
         return { connection, channel };
     } catch (error) {
         console.error('RabbitMQ Connection Error:', error);
-        console.warn('Backend will continue without RabbitMQ (Saga pattern will be disabled)');
+        console.warn('Backend will continue without RabbitMQ');
     }
 };
 

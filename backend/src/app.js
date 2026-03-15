@@ -16,9 +16,9 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Routes
-app.use('/api', productRoutes);
-app.use('/api', orderRoutes);
-app.use('/api', paymentRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

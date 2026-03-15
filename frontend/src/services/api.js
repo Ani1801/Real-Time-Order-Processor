@@ -13,9 +13,13 @@ export const productService = {
 };
 
 export const orderService = {
-  createOrder: (orderData) => api.post('/create-order', orderData),
+  createOrder: (orderData) => api.post('/orders/create-order', orderData),
   getOrders: () => api.get('/orders'),
-  getOrderStatus: (orderId) => api.get(`/order-status/${orderId}`),
+  getOrderStatus: (orderId) => api.get(`/orders/status/${orderId}`),
+};
+
+export const paymentService = {
+  processPayment: (orderId) => api.post('/payments/process-payment', { order_id: orderId })
 };
 
 export default api;
