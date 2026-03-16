@@ -9,10 +9,12 @@ const Product = {
                 p.name,
                 p.price,
                 p.category,
+                p.image_url,
+                p.updated_at,
                 COALESCE(i.available_stock, 0) AS available_stock
             FROM products p
             LEFT JOIN inventory i ON p.id = i.product_id
-            ORDER BY p.id
+            ORDER BY p.updated_at DESC
         `);
         return result.rows;
     },

@@ -16,6 +16,8 @@ const Products = () => {
     const [inStockOnly, setInStockOnly] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
 
     useEffect(() => {
         fetchProducts();
@@ -63,6 +65,17 @@ const Products = () => {
         return matchesSearch && matchesCategory && matchesStock;
     });
 
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const paginatedProducts = filteredProducts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // Reset to page 1 if filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, selectedCategory, inStockOnly]);
+
     return (
         <div className="products-page">
             <header className="page-header">
@@ -95,17 +108,41 @@ const Products = () => {
                             Try Again
                         </button>
                     </div>
-                ) : filteredProducts.length > 0 ? (
-                    <div className="product-grid">
-                        {filteredProducts.map(product => (
-                            <ProductCard
-                                key={product.product_id}
-                                product={product}
-                                onOpenDetails={handleOpenDetails}
-                                onPlaceOrder={(p) => handleConfirmOrder(p, 1)}
-                            />
-                        ))}
-                    </div>
+                ) : paginatedProducts.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {paginatedProducts.map(product => (
+                                <ProductCard
+                                    key={product.product_id}
+                                    product={product}
+                                    onOpenDetails={handleOpenDetails}
+                                    onPlaceOrder={(p) => handleConfirmOrder(p, 1)}
+                                />
+                            ))}
+                        </div>
+                        
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center mt-12 gap-4">
+                                <button 
+                                    className="btn-secondary-small px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    Previous
+                                </button>
+                                <div className="text-muted font-medium">
+                                    Page {currentPage} of {totalPages}
+                                </div>
+                                <button 
+                                    className="btn-secondary-small px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="empty-state">
                         <h3>No products found</h3>
@@ -114,6 +151,7 @@ const Products = () => {
                             setSearchQuery('');
                             setSelectedCategory('All');
                             setInStockOnly(false);
+                            setCurrentPage(1);
                         }}>Reset Filters</button>
                     </div>
                 )}
