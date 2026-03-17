@@ -35,12 +35,12 @@ const CategoryCard = ({ icon: Icon, title, link, index }) => {
             style={{ animationDelay: `${index * 0.1}s` }}
         >
             <div className="card-inner">
-                <div className="icon-wrapper">
-                    <Icon size={36} />
+                <div className="home-icon-wrapper" style={{ background: 'linear-gradient(135deg, rgba(26, 127, 126, 0.1), rgba(32, 178, 170, 0.1))' }}>
+                    <Icon size={36} style={{ color: 'var(--primary)' }} />
                 </div>
                 <h3 className="card-title">{title}</h3>
                 <p className="card-desc">Explore {title.toLowerCase()}</p>
-                <div className="card-link">
+                <div className="card-link" style={{ color: 'var(--primary)', fontWeight: '600' }}>
                     View Products
                     <ChevronRight size={18} />
                 </div>

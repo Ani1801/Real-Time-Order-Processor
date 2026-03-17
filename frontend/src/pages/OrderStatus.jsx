@@ -48,38 +48,35 @@ const OrderStatus = () => {
 
     return (
         <div className="order-status-page">
-            <header className="page-header">
+            <header className="order-status-header">
                 <div className="container">
-                    <div className="flex items-center gap-4 mb-4">
-                        <button onClick={() => navigate('/')} className="text-primary hover:bg-blue-50 p-2 rounded-full transition-colors">
-                            <ChevronLeft size={24} />
-                        </button>
-                        <h1 className="page-title !mb-0 text-left">Track Your Order</h1>
+                    <div className="order-status-header-content">
+                        <h1 className="order-status-title">Track Your Order</h1>
+                        <p className="order-status-subtitle">
+                            Get real-time updates on your purchase and follow its journey to your doorstep.
+                        </p>
                     </div>
-                    <p className="page-subtitle text-left ml-12">
-                        Get real-time updates on your purchase and follow its journey to your doorstep.
-                    </p>
                 </div>
             </header>
 
-            <main className="container py-12">
-                <div className="max-w-4xl mx-auto space-y-12">
+            <main className="order-status-main">
+                <div className="order-status-container">
                     {/* Lookup Section */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg">
-                        <form onSubmit={handleLookup} className="lookup-form">
-                            <div className="lookup-container">
-                                <Search className="lookup-icon" size={20} />
+                    <div className="order-lookup-card">
+                        <form onSubmit={handleLookup} className="order-lookup-form">
+                            <div className="order-lookup-input-wrapper">
+                                <Search className="order-lookup-icon" size={20} />
                                 <input
                                     type="text"
-                                    placeholder="Enter your Order ID (e.g. 123456)"
+                                    placeholder="Enter your Order ID (e.g. ORD-123456)"
                                     value={lookupId}
                                     onChange={(e) => setLookupId(e.target.value)}
-                                    className="lookup-input"
+                                    className="order-lookup-input"
                                 />
                             </div>
                             <button
                                 type="submit"
-                                className="btn-primary-large px-8"
+                                className="order-lookup-btn"
                                 disabled={loading || !lookupId.trim()}
                             >
                                 {loading ? <Loader2 className="animate-spin" size={20} /> : "Track Order"}

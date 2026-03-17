@@ -11,34 +11,35 @@ const Orders = () => {
     ];
 
     return (
-        <div className="orders-page container py-12">
-            <header className="mb-12">
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                        <History size={32} />
+        <div className="orders-page">
+            <header className="orders-page-header">
+                <div className="container">
+                    <div className="orders-header-content">
+                        <div className="orders-header-icon">
+                            <History size={32} />
+                        </div>
+                        <div>
+                            <h1 className="orders-title">Your Orders</h1>
+                            <p className="orders-subtitle">Track the progress of your real-time orders below.</p>
+                        </div>
                     </div>
-                    <h1 className="text-4xl font-bold">Your Orders</h1>
                 </div>
-                <p className="text-text-muted">Track the progress of your real-time orders below.</p>
             </header>
 
-            <div className="orders-grid space-y-6">
-                {dummyOrders.map((order, index) => (
-                    <motion.div
-                        key={order.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                    >
-                        <OrderStatus order={order} />
-                    </motion.div>
-                ))}
-            </div>
-
-            <style jsx>{`
-        .space-y-6 > * + * { margin-top: 1.5rem; }
-        .text-4xl { font-size: 2.25rem; }
-      `}</style>
+            <main className="container" style={{ padding: '3rem 1.5rem' }}>
+                <div className="orders-grid">
+                    {dummyOrders.map((order, index) => (
+                        <motion.div
+                            key={order.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                        >
+                            <OrderStatus order={order} />
+                        </motion.div>
+                    ))}
+                </div>
+            </main>
         </div>
     );
 };

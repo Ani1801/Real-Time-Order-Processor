@@ -13,7 +13,7 @@ export const productService = {
 };
 
 export const orderService = {
-  createOrder: (orderData) => api.post('/orders/create-order', orderData),
+  createOrder: (orderData) => api.post('/orders/create', orderData),
   getOrders: () => api.get('/orders'),
   getOrderStatus: (orderId) => api.get(`/orders/status/${orderId}`),
 };

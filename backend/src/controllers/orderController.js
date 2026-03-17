@@ -1,28 +1,30 @@
 const orderService = require('../services/orderService');
+const db = require('../config/db'); // Needed for getOrderStatus fallback
 
 const orderController = {
     createOrder: async (req, res, next) => {
         try {
-            const { product_id, quantity, user_id } = req.body;
+            const { user_id, product_id, quantity } = req.body;
 
             // Basic validation
-            if (!product_id || !quantity || !user_id) {
-                return res.status(400).json({ message: "Missing required fields: product_id, quantity, user_id" });
+            if (!user_id || !product_id || !quantity) {
+                return res.status(400).json({ message: "Missing required fields: user_id, product_id, quantity" });
             }
 
             if (quantity <= 0) {
                 return res.status(400).json({ message: "Quantity must be greater than zero" });
             }
 
-            console.log(`Creating order for product ${product_id}, quantity ${quantity}, user ${user_id}`);
+            console.log(`Creating order for user ${user_id}, product ${product_id}, quantity ${quantity}`);
 
-            const order = await orderService.createOrder(product_id, quantity, user_id);
+            const order_id = await orderService.createOrder(user_id, product_id, quantity);
+            
             return res.status(201).json({
                 message: "Order created successfully",
-                order_id: order.id
+                order_id: order_id
             });
         } catch (error) {
-            if (error.message === 'Insufficient stock') {
+            if (error.message === 'Insufficient stock' || error.message === 'Stock unavailable' || error.message === 'Product not found') {
                 return res.status(400).json({ message: error.message });
             }
             next(error);

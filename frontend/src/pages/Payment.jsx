@@ -105,14 +105,12 @@ const Payment = () => {
 
     return (
         <div className="payment-page">
-            <header className="page-header" style={{ padding: '3rem 0', background: 'var(--bg-light)' }}>
-                <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                    <div style={{ textAlign: 'left' }}>
-                        <h1 className="page-title" style={{ margin: 0, fontSize: '2rem' }}>Secure Checkout</h1>
-                        <p className="page-subtitle" style={{ fontSize: '1rem', marginTop: '0.25rem' }}>
-                            Complete your payment for Order #{orderId}
-                        </p>
-                    </div>
+            <header className="payment-header">
+                <div className="container">
+                    <h1 className="payment-title">Secure Checkout</h1>
+                    <p className="payment-subtitle">
+                        Complete your payment for Order #{orderId}
+                    </p>
                 </div>
             </header>
 

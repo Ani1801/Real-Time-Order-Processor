@@ -78,14 +78,23 @@ const Products = () => {
 
     return (
         <div className="products-page">
-            <header className="page-header">
+            {/* Promotional Banner */}
+            <div className="products-banner">
                 <div className="container">
-                    <h1 className="page-title">Available Products</h1>
-                    <p className="page-subtitle">Browse available items and place an order instantly.</p>
+                    <div className="banner-content">
+                        <div className="banner-text">
+                            <h2>Discover Our Collection</h2>
+                            <p>Explore thousands of products at amazing prices</p>
+                        </div>
+                        <div className="banner-cta">
+                            <button className="btn-banner-cta">Shop Now</button>
+                        </div>
+                    </div>
                 </div>
-            </header>
+            </div>
 
-            <main className="container py-12">
+            <main className="container products-main">
+                {/* Filters Section */}
                 <ProductFilter
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
@@ -95,14 +104,15 @@ const Products = () => {
                     setInStockOnly={setInStockOnly}
                 />
 
+                {/* Loading State */}
                 {loading ? (
-                    <div className="loading-state">
-                        <Loader2 className="animate-spin text-primary" size={48} />
+                    <div className="products-loading">
+                        <Loader2 className="animate-spin" size={48} style={{color: 'var(--primary)'}} />
                         <p>Loading products...</p>
                     </div>
                 ) : error ? (
-                    <div className="empty-state">
-                        <h3 className="text-red-500">Connection Error</h3>
+                    <div className="products-error">
+                        <h3>Connection Error</h3>
                         <p>{error}</p>
                         <button className="btn-primary-small" onClick={fetchProducts} style={{ width: 'auto', padding: '0.75rem 2rem', marginTop: '1rem' }}>
                             Try Again
@@ -110,7 +120,8 @@ const Products = () => {
                     </div>
                 ) : paginatedProducts.length > 0 ? (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {/* Product Grid */}
+                        <div className="product-grid">
                             {paginatedProducts.map(product => (
                                 <ProductCard
                                     key={product.product_id}
@@ -121,20 +132,21 @@ const Products = () => {
                             ))}
                         </div>
                         
+                        {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="flex justify-center items-center mt-12 gap-4">
+                            <div className="products-pagination">
                                 <button 
-                                    className="btn-secondary-small px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="pagination-btn"
                                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
                                 >
                                     Previous
                                 </button>
-                                <div className="text-muted font-medium">
+                                <div className="pagination-info">
                                     Page {currentPage} of {totalPages}
                                 </div>
                                 <button 
-                                    className="btn-secondary-small px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="pagination-btn"
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
                                 >
@@ -144,10 +156,10 @@ const Products = () => {
                         )}
                     </>
                 ) : (
-                    <div className="empty-state">
+                    <div className="products-empty">
                         <h3>No products found</h3>
                         <p>Try adjusting your search or filters to find what you're looking for.</p>
-                        <button className="btn-secondary-small" onClick={() => {
+                        <button className="btn-primary-small" onClick={() => {
                             setSearchQuery('');
                             setSelectedCategory('All');
                             setInStockOnly(false);

@@ -1,39 +1,84 @@
-const Order = require('../models/orderModel');
-const Product = require('../models/productModel');
-const { publishToQueue } = require('../queue/producer');
-
-const inventoryService = require('./inventoryService');
+const db = require('../config/db');
 
 const orderService = {
-    createOrder: async (productId, quantity, userId) => {
-        // 1. Check inventory availability
-        const isAvailable = await inventoryService.checkAvailability(productId, quantity);
-        if (!isAvailable) throw new Error('Insufficient stock');
+    createOrder: async (user_id, product_id, quantity) => {
+        const client = await db.pool.connect();
 
-        // 2. Reserve stock
-        const reserved = await inventoryService.reserveStock(productId, quantity);
-        if (!reserved) throw new Error('Failed to reserve stock');
+        try {
+            await client.query('BEGIN');
 
-        const product = await Product.getById(productId);
-        const totalPrice = product.price * quantity;
+            // 1. Fetch product price
+            const productRes = await client.query('SELECT price FROM products WHERE id = $1', [product_id]);
+            if (productRes.rows.length === 0) {
+                throw new Error('Product not found');
+            }
+            const price = parseFloat(productRes.rows[0].price);
 
-        // 3. Create order and order items
-        const order = await Order.create(userId, productId, quantity, totalPrice);
+            // 2. Check inventory availability
+            const inventoryRes = await client.query('SELECT available_stock FROM inventory WHERE product_id = $1', [product_id]);
+            if (inventoryRes.rows.length === 0) {
+                throw new Error('Inventory record not found for this product');
+            }
+            const available_stock = inventoryRes.rows[0].available_stock;
+            if (available_stock < quantity) {
+                throw new Error('Insufficient stock');
+            }
 
-        // 4. Publish to RabbitMQ
-        await publishToQueue('order_created', {
-            orderId: order.id,
-            userId,
-            productId,
-            quantity,
-            totalPrice,
-            type: 'ORDER_CREATED'
-        });
+            // 3. Reserve stock safely (concurrency safe)
+            const updateInventoryRes = await client.query(
+                `UPDATE inventory 
+                 SET available_stock = available_stock - $2, 
+                     reserved_stock = reserved_stock + $2 
+                 WHERE product_id = $1 AND available_stock >= $2 
+                 RETURNING *`,
+                [product_id, quantity]
+            );
 
-        return order;
+            if (updateInventoryRes.rows.length === 0) {
+                throw new Error('Stock unavailable');
+            }
+
+            // 4. Calculate total price
+            const total_price = price * quantity;
+
+            // 5. Create order
+            const orderRes = await client.query(
+                `INSERT INTO orders (user_id, total_price, status) 
+                 VALUES ($1, $2, 'Pending') 
+                 RETURNING id`,
+                [user_id, total_price]
+            );
+            const order_id = orderRes.rows[0].id;
+
+            // 6. Insert order_items record
+            await client.query(
+                `INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) 
+                 VALUES ($1, $2, $3, $4)`,
+                [order_id, product_id, quantity, price]
+            );
+
+            // 7. Create payment record (status = Pending)
+            await client.query(
+                `INSERT INTO payments (order_id, amount, status) 
+                 VALUES ($1, $2, 'Pending')`,
+                [order_id, total_price]
+            );
+
+            // 8. Commit transaction
+            await client.query('COMMIT');
+
+            return order_id;
+
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     },
     getOrderStatus: async (orderId) => {
-        return await Order.getById(orderId);
+        const result = await db.query('SELECT * FROM orders WHERE id = $1', [orderId]);
+        return result.rows[0];
     }
 };
 

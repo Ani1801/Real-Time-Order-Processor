@@ -1,75 +1,135 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Search, Loader2, RefreshCw, ChevronLeft, AlertCircle } from 'lucide-react';
+import { orderService } from '../services/api';
+import OrderStatusCard from '../components/OrderStatusCard';
+import OrderProgressTracker from '../components/OrderProgressTracker';
 
-const OrderStatus = ({ order }) => {
-    const steps = [
-        { label: 'Pending', icon: Clock, id: 'pending' },
-        { label: 'Processing', icon: Package, id: 'processing' },
-        { label: 'Shipped', icon: Truck, id: 'shipped' },
-        { label: 'Delivered', icon: CheckCircle, id: 'delivered' }
-    ];
+const OrderStatus = () => {
+    const { orderId } = useParams();
+    const navigate = useNavigate();
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [lookupId, setLookupId] = useState(orderId || '');
 
-    const currentStepIndex = steps.findIndex(s => s.id === (order.status || 'pending').toLowerCase());
+    useEffect(() => {
+        if (orderId) {
+            fetchOrderStatus(orderId);
+            setLookupId(orderId);
+        }
+    }, [orderId]);
+
+    const fetchOrderStatus = async (id) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await orderService.getOrderStatus(id);
+            setOrder(response.data);
+        } catch (err) {
+            console.error("Fetch order status error:", err);
+            // Handling non-JSON responses or explicit errors
+            const message = err.response?.data?.message || err.message || "Connection failure";
+            setError(err.response?.status === 404
+                ? "Order not found. Please check your order ID."
+                : `Error: ${message}`);
+            setOrder(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLookup = (e) => {
+        e.preventDefault();
+        if (lookupId.trim()) {
+            navigate(`/order-status/${lookupId.trim()}`);
+        }
+    };
 
     return (
-        <div className="order-status p-6 glass-card mb-4">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h3 className="text-xl font-bold">Order #{order.id.slice(-6)}</h3>
-                    <p className="text-text-muted text-sm">{order.productName} • Quantity: {order.quantity}</p>
+        <div className="order-status-page">
+            <header className="order-status-header">
+                <div className="container">
+                    <div className="order-status-header-content">
+                        <h1 className="order-status-title">Track Your Order</h1>
+                        <p className="order-status-subtitle">
+                            Get real-time updates on your purchase and follow its journey to your doorstep.
+                        </p>
+                    </div>
                 </div>
-                <div className="status-badge" data-status={order.status.toLowerCase()}>
-                    {order.status}
-                </div>
-            </div>
+            </header>
 
-            <div className="status-timeline relative grow flex justify-between">
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 z-0"></div>
-                <motion.div
-                    className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                />
-
-                {steps.map((step, idx) => {
-                    const Icon = step.icon;
-                    const isActive = idx <= currentStepIndex;
-                    const isCurrent = idx === currentStepIndex;
-
-                    return (
-                        <div key={step.id} className="status-step relative z-10 flex flex-col items-center">
-                            <motion.div
-                                className={`step-dot h-12 w-12 rounded-full flex items-center justify-center mb-2 ${isActive ? 'bg-primary text-white' : 'bg-bg-color text-text-muted border border-glass-border'}`}
-                                animate={isCurrent ? { scale: [1, 1.1, 1], boxShadow: ["0 0 0 0px var(--primary-glow)", "0 0 20px 5px var(--primary-glow)", "0 0 0 0px var(--primary-glow)"] } : {}}
-                                transition={{ duration: 2, repeat: Infinity }}
+            <main className="order-status-main">
+                <div className="order-status-container">
+                    {/* Lookup Section */}
+                    <div className="order-lookup-card">
+                        <form onSubmit={handleLookup} className="order-lookup-form">
+                            <div className="order-lookup-input-wrapper">
+                                <Search className="order-lookup-icon" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="Enter your Order ID (e.g. ORD-123456)"
+                                    value={lookupId}
+                                    onChange={(e) => setLookupId(e.target.value)}
+                                    className="order-lookup-input"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="order-lookup-btn"
+                                disabled={loading || !lookupId.trim()}
                             >
-                                <Icon size={20} />
-                            </motion.div>
-                            <span className={`text-xs font-semibold ${isActive ? 'text-primary' : 'text-text-muted'}`}>{step.label}</span>
-                        </div>
-                    );
-                })}
-            </div>
+                                {loading ? <Loader2 className="animate-spin" size={20} /> : "Track Order"}
+                            </button>
+                        </form>
+                    </div>
 
-            <style jsx>{`
-        .status-badge {
-          padding: 4px 12px;
-          border-radius: 9999px;
-          font-size: 12px;
-          font-weight: 700;
-          text-transform: uppercase;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid var(--glass-border);
-        }
-        .status-badge[data-status="pending"] { color: var(--text-muted); }
-        .status-badge[data-status="processing"] { color: var(--primary); border-color: var(--primary); }
-        .status-badge[data-status="shipped"] { color: var(--secondary); border-color: var(--secondary); }
-        .status-badge[data-status="delivered"] { color: var(--accent); border-color: var(--accent); }
-        
-        .status-step { width: 60px; }
-      `}</style>
+                    {/* Results Section */}
+                    {loading ? (
+                        <div className="order-loading-state">
+                            <Loader2 className="animate-spin" size={48} style={{color: 'var(--primary)'}} />
+                            <p>Retrieving real-time order data...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="order-error-state">
+                            <AlertCircle size={48} />
+                            <h3>Tracking Failed</h3>
+                            <p>{error}</p>
+                            <button
+                                onClick={() => navigate('/order-status')}
+                                className="order-error-btn"
+                            >
+                                Try checking another ID
+                            </button>
+                        </div>
+                    ) : order ? (
+                        <div className="order-results">
+                            <div className="progress-header">
+                                <h3 className="progress-title">Current Progress</h3>
+                                <button
+                                    onClick={() => fetchOrderStatus(orderId)}
+                                    className="refresh-btn"
+                                >
+                                    <RefreshCw size={18} />
+                                    Refresh Status
+                                </button>
+                            </div>
+
+                            <div className="tracker-container">
+                                <OrderProgressTracker currentStatus={order.order_status} />
+                            </div>
+
+                            <OrderStatusCard order={order} />
+                        </div>
+                    ) : (
+                        <div className="status-placeholder">
+                            <Search size={80} />
+                            <h3 className="text-2xl font-bold text-slate-400">Ready to track?</h3>
+                            <p className="text-slate-400 mt-2">Enter an order ID above to see the status.</p>
+                        </div>
+                    )}
+                </div>
+            </main>
         </div>
     );
 };

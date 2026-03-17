@@ -15,14 +15,15 @@ const PlaceOrder = () => {
 
     return (
         <div className="place-order-page">
-            <header className="page-header" style={{ padding: '3rem 0', background: 'var(--bg-light)' }}>
-                <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                    <Link to="/products" className="nav-link" style={{ display: 'inline-flex', padding: '0.5rem', background: 'white', borderRadius: '50%', border: '1px solid var(--border)' }}>
-                        <ArrowLeft size={24} />
+            <header className="place-order-header">
+                <div className="container">
+                    <Link to="/products" className="back-button">
+                        <ArrowLeft size={20} />
+                        Back to Products
                     </Link>
-                    <div style={{ textAlign: 'left' }}>
-                        <h1 className="page-title" style={{ margin: 0, fontSize: '2rem' }}>Confirm Your Order</h1>
-                        <p className="page-subtitle" style={{ fontSize: '1rem', marginTop: '0.25rem' }}>
+                    <div style={{ marginTop: '1.5rem' }}>
+                        <h1 className="place-order-title">Confirm Your Order</h1>
+                        <p className="place-order-subtitle">
                             Verify your product details and place your order securely.
                         </p>
                     </div>

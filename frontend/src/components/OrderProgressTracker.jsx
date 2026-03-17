@@ -25,14 +25,14 @@ const OrderProgressTracker = ({ currentStatus }) => {
     const activeIndex = getCurrentStep();
 
     return (
-        <div className="w-full py-12 px-4">
-            <div className="relative flex justify-between">
+        <div className="progress-tracker">
+            <div className="progress-tracker-container">
                 {/* Background Line */}
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 z-0"></div>
+                <div className="progress-line-bg"></div>
 
                 {/* Active Progress Line */}
                 <div
-                    className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0 transition-all duration-1000 ease-out"
+                    className="progress-line-active"
                     style={{ width: `${(activeIndex / (steps.length - 1)) * 100}%` }}
                 ></div>
 
@@ -42,20 +42,14 @@ const OrderProgressTracker = ({ currentStatus }) => {
                     const isActive = index === activeIndex;
 
                     return (
-                        <div key={step.id} className="relative z-10 flex flex-col items-center">
+                        <div key={step.id} className="progress-step">
                             <div
-                                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${isCompleted || isActive
-                                        ? 'bg-primary text-white shadow-lg shadow-blue-200'
-                                        : 'bg-white border-4 border-slate-100 text-slate-300'
-                                    } ${isActive ? 'scale-125 ring-4 ring-blue-50' : ''}`}
+                                className={`progress-circle ${isCompleted || isActive ? 'active' : 'inactive'} ${isActive ? 'current' : ''}`}
                             >
-                                {isCompleted ? <Check size={28} /> : <Icon size={24} />}
+                                {isCompleted ? <Check size={24} /> : <Icon size={20} />}
                             </div>
-                            <div className="mt-6 text-center">
-                                <p
-                                    className={`text-sm font-bold truncate max-w-[100px] md:max-w-none transition-colors ${isCompleted || isActive ? 'text-slate-900' : 'text-slate-400'
-                                        }`}
-                                >
+                            <div className="progress-label">
+                                <p className={`progress-text ${isCompleted || isActive ? 'completed' : 'pending'}`}>
                                     {step.name}
                                 </p>
                             </div>
