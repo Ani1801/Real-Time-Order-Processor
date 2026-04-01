@@ -17,15 +17,16 @@ const orderController = {
 
             console.log(`Creating order for user ${user_id}, product ${product_id}, quantity ${quantity}`);
 
-            const order_id = await orderService.createOrder(user_id, product_id, quantity);
+            const { orderId, remainingStock } = await orderService.createOrder(user_id, product_id, quantity);
             
             return res.status(201).json({
                 message: "Order created successfully",
-                order_id: order_id
+                order_id: orderId,
+                remainingStock: remainingStock
             });
         } catch (error) {
-            if (error.message === 'Insufficient stock' || error.message === 'Stock unavailable' || error.message === 'Product not found') {
-                return res.status(400).json({ message: error.message });
+            if (error.message === 'Insufficient stock' || error.message === 'Stock unavailable during update' || error.message === 'Product not found') {
+                return res.status(409).json({ message: error.message });
             }
             next(error);
         }

@@ -14,8 +14,8 @@ const orderService = {
             }
             const price = parseFloat(productRes.rows[0].price);
 
-            // 2. Check inventory availability
-            const inventoryRes = await client.query('SELECT available_stock FROM inventory WHERE product_id = $1', [product_id]);
+            // 2. Lock and Check inventory availability (Pessimistic Locking)
+            const inventoryRes = await client.query('SELECT available_stock FROM inventory WHERE product_id = $1 FOR UPDATE', [product_id]);
             if (inventoryRes.rows.length === 0) {
                 throw new Error('Inventory record not found for this product');
             }
@@ -24,19 +24,21 @@ const orderService = {
                 throw new Error('Insufficient stock');
             }
 
-            // 3. Reserve stock safely (concurrency safe)
+            // 3. Atomic stock reservation
             const updateInventoryRes = await client.query(
                 `UPDATE inventory 
                  SET available_stock = available_stock - $2, 
                      reserved_stock = reserved_stock + $2 
                  WHERE product_id = $1 AND available_stock >= $2 
-                 RETURNING *`,
+                 RETURNING available_stock`,
                 [product_id, quantity]
             );
 
             if (updateInventoryRes.rows.length === 0) {
-                throw new Error('Stock unavailable');
+                throw new Error('Stock unavailable during update'); // Safety check
             }
+            
+            const remainingStock = updateInventoryRes.rows[0].available_stock;
 
             // 4. Calculate total price
             const total_price = price * quantity;
@@ -67,7 +69,7 @@ const orderService = {
             // 8. Commit transaction
             await client.query('COMMIT');
 
-            return order_id;
+            return { orderId: order_id, remainingStock };
 
         } catch (error) {
             await client.query('ROLLBACK');
